@@ -1,0 +1,89 @@
+#include <Wire.h>
+#include <Adafruit_GFX.h>
+#include <Adafruit_SSD1306.h>
+#include "DHT.h"
+
+#define screen_width 128 // OLED display width, in pixels
+#define screen_height 32 // OLED display height, in pixels
+#define DHTPIN 2     // Digital pin connected to the DHT sensor
+#define DHTTYPE DHT22  //DHT 22
+
+
+
+
+Adafruit_SSD1306 display(screen_width, screen_height);
+DHT dht(DHTPIN, DHTTYPE);
+
+
+const int analogInPin1 = A0;  // Analog input pin that the potentiometer is attached to
+const int analogInPin2 = A1;  // Analog input pin that the potentiometer is attached to
+const int analogInPin3 = A2;  // Analog input pin that the potentiometer is attached to
+
+int analogValue1 = 0;        // value read from the pot
+int analogValue2 = 0;        // value read from the pot
+int analogValue3 = 0;        // value read from the pot
+
+float outputVoltage1 = 0;
+float outputVoltage2 = 0;
+float outputVoltage3 = 0;
+
+int Concentration1 = 0;        // value output to the PWM (analog out)
+int Concentration2 = 0;        // value output to the PWM (analog out)
+int Concentration3 = 0;        // value output to the PWM (analog out)
+
+
+
+void setup() {  
+display.begin(SSD1306_SWITCHCAPVCC, 0x3C);  
+ dht.begin();
+}
+
+void loop() {
+  delay(2000);
+  int h = dht.readHumidity();       // Read humidity
+  int t = dht.readTemperature();      // Read temperature as Celsius (the default)
+  
+ analogValue1 = analogRead(analogInPin1);
+  analogValue2 = analogRead(analogInPin2);
+   analogValue3 = analogRead(analogInPin3);
+   
+ outputVoltage1 = (5.0/1024)*analogValue1;
+  outputVoltage2 = (5.0/1024)*analogValue2;
+   outputVoltage3 = (5.0/1024)*analogValue3;
+   
+ Concentration1 = map(outputVoltage1, 0, 5, 0, 100);
+ Concentration2 = map(outputVoltage2, 0, 5, 0, 100);
+ Concentration3 = map(outputVoltage3, 0, 5, 0, 100);
+  
+ display.clearDisplay(); // Clear display buffer
+ display.setTextSize(2);
+ display.setTextColor(SSD1306_WHITE);
+ 
+ display.setCursor(0, 0);
+ display.print(t);
+ display.print((char)247);
+ display.print("C");
+ 
+ display.setCursor(90, 0);
+ display.print(h);
+ display.print("%");
+ 
+ display.setCursor(0, 18);
+ display.print("NO2: ");
+ display.setCursor(50, 18);
+ display.print(Concentration1);
+  display.print(" ppm");
+
+  //display.setCursor(0, 18);
+ //display.print(outputVoltage3); 
+ //display.print("  V");
+ 
+ //display.setCursor(0, 18);
+ //display.print(Concentration1);
+ //display.setCursor(50, 18);
+ //display.print(Concentration2);
+ //display.setCursor(100, 18);
+ //display.print(Concentration3);
+ //display.print("  ppm");
+ display.display();
+}
